@@ -99,33 +99,22 @@ Both bases are valid. The choice depends on the intended application.
 
 ---
 
-## Application: Galaxy Rotation Curves (May 2026)
+## Implementation: OxiEML-Star
 
-eml★ was applied to galaxy rotation curves via genetic programming symbolic regression, demonstrating its first empirical application beyond pure mathematics.
+The symbolic-regression engine that puts eml★ to work is maintained
+in a companion repository:
 
-### Method
-- GP engine (DEAP) with eml★ operators applied to 125 SPARC galaxies + 23 LITTLE THINGS dwarf galaxies
-- Comparison protocol: fits with vs without anti-holomorphic operators
-- Characterization battery on 6 synthetic complex functions
+**→ https://github.com/antparis/oxieml-star**
 
-### Key Results
+While this repository holds the theory (operator definition,
+Theorems 3.1 and 4.3, branch-safety analysis), OxiEML-Star provides
+the computational pipeline: a PySR-based detector using the toolboxes
+{eml, eml★} and {eml, Re}, an exact SymPy judge (`verify_exact.py`)
+certifying the holomorphic / anti-holomorphic verdict via the
+Wirtinger derivative ∂f/∂z̄, and a synthetic test battery with
+judge-certified ground truth.
 
-| Result | Status |
-|--------|--------|
-| eml★ = non-holomorphicity detector (0/10 holomorphic, 10/10 anti-holomorphic) | **ESTABLISHED** |
-| Improvement correlates with low luminosity (rho = -0.27, p = 0.004) | **ESTABLISHED** |
-| Signal replicates on independent dataset (LITTLE THINGS, 43.5%) | **ESTABLISHED** |
-| MOND acceleration: not a predictor (p = 0.35) | **NEGATIVE** |
-| Dark matter fraction: not a predictor (p = 0.81) | **NEGATIVE** |
-| Vortex topology detection: ruled out (fake vortex 5/5) | **REFUTED** |
-
-### Interpretation
-The gravitational potential in dark-matter-dominated galaxies contains a non-holomorphic component (df/dz_bar != 0) that becomes detectable when the baryonic signal is subdominant. Luminosity is the best single predictor of eml★ response.
-
-### Resources
-- **Paper draft:** [`eml_star_paper_draft3.md`](https://github.com/antparis/oxieml-star/blob/master/eml_star_paper_draft3.md)
-- **Rust engine:** [OxiEML-Star](https://github.com/antparis/oxieml-star) | [Zenodo DOI:10.5281/zenodo.20152989](https://zenodo.org/records/20152989)
-- **Data:** 125 SPARC + 23 LITTLE THINGS rotation curves (public)
+Software archive: Zenodo DOI 10.5281/zenodo.20152989
 
 ## License
 
