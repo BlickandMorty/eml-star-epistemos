@@ -75,9 +75,11 @@ def test_fold_to_band(n_points=10000, seed=42):
     assert success == n_points, f"Folding failed on {n_points - success} points"
     print(f"\n  PASS  100% of points folded correctly.")
     print(f"  PASS  Error = integer multiple of 2*pi confirmed out of band.")
-    return True
+    return None
 
 
 if __name__ == "__main__":
-    ok = test_fold_to_band()
-    sys.exit(0 if ok else 1)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    test_fold_to_band()
+    sys.exit(0)

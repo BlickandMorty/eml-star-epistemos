@@ -1,51 +1,44 @@
+"""A small, auditable rewrite optimizer for EML/EML-star expressions.
+
+This replaces three invalid or unreachable upstream rewrites.  Rewrites are
+structural and expose their branch assumptions; numerical equality tests cover
+representative values but are not substitutes for analytic proofs.
 """
-eml_toolkit/optimizer.py
-EGraph optimizer for eml★ expression trees.
 
-Implements 6 rewriting rules that simplify eml and eml★ trees
-by eliminating redundant compositions.
+from __future__ import annotations
 
-Rules:
-  1. eml(x, 1)           -> exp(x)
-  2. eml(1, exp(x))      -> 1 - x  (ln simplification)
-  3. eml(ln(x), exp(y))  -> x - y  (subtraction shortcut)
-  4. eml★(0, eml(z, 1))  -> 1 - conj(z)  (Theorem 3.1)
-  5. eml(eml(1,x), 1)    -> exp(1 - x)
-  6. eml(0, x)           -> 1 - ln(x)
-"""
-import mpmath
+from dataclasses import dataclass
 
-mpmath.mp.dps = 50
+import mpmath as mp
 
+mp.mp.dps = 60
 
-# ── Symbolic expression tree ───────────────────────────────────────────────────
 
 class Expr:
-    """Base class for symbolic EML expressions."""
     def eval(self, z=None):
         raise NotImplementedError
 
-    def depth(self):
+    def depth(self) -> int:
         return 1
 
-    def node_count(self):
+    def node_count(self) -> int:
         return 1
 
 
+@dataclass(frozen=True)
 class Const(Expr):
-    def __init__(self, value):
-        self.value = value
+    value: complex
 
     def eval(self, z=None):
-        return mpmath.mpc(self.value)
+        return mp.mpc(self.value)
 
     def __repr__(self):
         return str(self.value)
 
 
+@dataclass(frozen=True)
 class Var(Expr):
-    def __init__(self, name="z"):
-        self.name = name
+    name: str = "z"
 
     def eval(self, z=None):
         return z
@@ -54,15 +47,13 @@ class Var(Expr):
         return self.name
 
 
+@dataclass(frozen=True)
 class EML(Expr):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+    left: Expr
+    right: Expr
 
     def eval(self, z=None):
-        l = self.left.eval(z)
-        r = self.right.eval(z)
-        return mpmath.exp(l) - mpmath.log(r)
+        return mp.exp(self.left.eval(z)) - mp.log(self.right.eval(z))
 
     def depth(self):
         return 1 + max(self.left.depth(), self.right.depth())
@@ -74,15 +65,13 @@ class EML(Expr):
         return f"eml({self.left}, {self.right})"
 
 
+@dataclass(frozen=True)
 class EMLStar(Expr):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
+    left: Expr
+    right: Expr
 
     def eval(self, z=None):
-        l = self.left.eval(z)
-        r = self.right.eval(z)
-        return mpmath.exp(l) - mpmath.log(mpmath.conj(r))
+        return mp.exp(self.left.eval(z)) - mp.log(mp.conj(self.right.eval(z)))
 
     def depth(self):
         return 1 + max(self.left.depth(), self.right.depth())
@@ -91,144 +80,160 @@ class EMLStar(Expr):
         return 1 + self.left.node_count() + self.right.node_count()
 
     def __repr__(self):
-        return f"eml★({self.left}, {self.right})"
+        return f"eml_star({self.left}, {self.right})"
 
 
-# ── EGraph optimizer ───────────────────────────────────────────────────────────
-
-class EGraphOptimizer:
-    """
-    Simplifies EML expression trees using 6 algebraic rewriting rules.
-    Reduces tree depth and node count without changing the computed value.
-    """
-
-    def __init__(self, max_passes=10):
-        self.max_passes = max_passes
-        self.rules_applied = 0
-
-    def optimize(self, expr):
-        """Apply rewriting rules until no further simplification is possible."""
-        self.rules_applied = 0
-        for _ in range(self.max_passes):
-            new_expr = self._apply_rules(expr)
-            if repr(new_expr) == repr(expr):
-                break
-            expr = new_expr
-        return expr
-
-    def _apply_rules(self, expr):
-        """Recursively apply all 6 rewriting rules."""
-        if isinstance(expr, (Const, Var)):
-            return expr
-
-        if isinstance(expr, EML):
-            # Recurse first
-            left  = self._apply_rules(expr.left)
-            right = self._apply_rules(expr.right)
-
-            # Rule 1: eml(x, 1) = exp(x)
-            if isinstance(right, Const) and right.value == 1:
-                self.rules_applied += 1
-                return _ExpNode(left)
-
-            # Rule 5: eml(eml(1, x), 1) = exp(1 - x)
-            if (isinstance(left, EML)
-                    and isinstance(left.left, Const)
-                    and left.left.value == 1
-                    and isinstance(right, Const)
-                    and right.value == 1):
-                self.rules_applied += 1
-                return _ExpNode(_SubNode(Const(1), left.right))
-
-            # Rule 6: eml(0, x) = 1 - ln(x)
-            if isinstance(left, Const) and left.value == 0:
-                self.rules_applied += 1
-                return _SubNode(Const(1), _LnNode(right))
-
-            return EML(left, right)
-
-        if isinstance(expr, EMLStar):
-            left  = self._apply_rules(expr.left)
-            right = self._apply_rules(expr.right)
-
-            # Rule 4: eml★(0, eml(z, 1)) = 1 - conj(z)
-            if (isinstance(left, Const) and left.value == 0
-                    and isinstance(right, EML)
-                    and isinstance(right.right, Const)
-                    and right.right.value == 1):
-                self.rules_applied += 1
-                return _SubNode(Const(1), _ConjNode(right.left))
-
-            return EMLStar(left, right)
-
-        return expr
-
-
-# ── Helper nodes for simplified expressions ────────────────────────────────────
-
-class _ExpNode(Expr):
-    def __init__(self, arg):
-        self.arg = arg
+@dataclass(frozen=True)
+class Exp(Expr):
+    arg: Expr
 
     def eval(self, z=None):
-        return mpmath.exp(self.arg.eval(z))
+        return mp.exp(self.arg.eval(z))
+
+    def depth(self):
+        return 1 + self.arg.depth()
+
+    def node_count(self):
+        return 1 + self.arg.node_count()
 
     def __repr__(self):
         return f"exp({self.arg})"
 
 
-class _LnNode(Expr):
-    def __init__(self, arg):
-        self.arg = arg
+@dataclass(frozen=True)
+class Ln(Expr):
+    arg: Expr
 
     def eval(self, z=None):
-        return mpmath.log(self.arg.eval(z))
+        return mp.log(self.arg.eval(z))
+
+    def depth(self):
+        return 1 + self.arg.depth()
+
+    def node_count(self):
+        return 1 + self.arg.node_count()
 
     def __repr__(self):
         return f"ln({self.arg})"
 
 
-class _SubNode(Expr):
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
+@dataclass(frozen=True)
+class Sub(Expr):
+    left: Expr
+    right: Expr
 
     def eval(self, z=None):
-        return self.a.eval(z) - self.b.eval(z)
+        return self.left.eval(z) - self.right.eval(z)
+
+    def depth(self):
+        return 1 + max(self.left.depth(), self.right.depth())
+
+    def node_count(self):
+        return 1 + self.left.node_count() + self.right.node_count()
 
     def __repr__(self):
-        return f"({self.a} - {self.b})"
+        return f"({self.left} - {self.right})"
 
 
-class _ConjNode(Expr):
-    def __init__(self, arg):
-        self.arg = arg
+@dataclass(frozen=True)
+class Conj(Expr):
+    arg: Expr
 
     def eval(self, z=None):
-        return mpmath.conj(self.arg.eval(z))
+        return mp.conj(self.arg.eval(z))
+
+    def depth(self):
+        return 1 + self.arg.depth()
+
+    def node_count(self):
+        return 1 + self.arg.node_count()
 
     def __repr__(self):
         return f"conj({self.arg})"
 
 
-# ── Demo ───────────────────────────────────────────────────────────────────────
+def _is_const(expr: Expr, value: int) -> bool:
+    return isinstance(expr, Const) and expr.value == value
+
+
+class EGraphOptimizer:
+    """Fixed-point simplifier with six branch-aware rewrite rules."""
+
+    RULES = (
+        "eml(eml(1,x),1) -> exp(exp(1)-ln(x))",
+        "eml(ln(x),exp(y)) -> x-y",
+        "eml(1,exp(x)) -> exp(1)-x",
+        "eml_star(0,exp(z)) -> 1-conj(z) [principal strip]",
+        "eml(0,x) -> 1-ln(x)",
+        "eml(x,1) -> exp(x)",
+    )
+
+    def __init__(self, max_passes: int = 10):
+        self.max_passes = max_passes
+        self.rules_applied = 0
+
+    def optimize(self, expr: Expr) -> Expr:
+        self.rules_applied = 0
+        for _ in range(self.max_passes):
+            new_expr = self._apply_rules(expr)
+            if new_expr == expr:
+                return new_expr
+            expr = new_expr
+        return expr
+
+    def _apply_rules(self, expr: Expr) -> Expr:
+        if isinstance(expr, (Const, Var)):
+            return expr
+        if isinstance(expr, (Exp, Ln, Conj)):
+            return type(expr)(self._apply_rules(expr.arg))
+        if isinstance(expr, Sub):
+            return Sub(self._apply_rules(expr.left), self._apply_rules(expr.right))
+
+        if isinstance(expr, EML):
+            left = self._apply_rules(expr.left)
+            right = self._apply_rules(expr.right)
+
+            # Specific patterns must precede the generic right-one rule.
+            if isinstance(left, EML) and _is_const(left.left, 1) and _is_const(right, 1):
+                self.rules_applied += 1
+                return Exp(Sub(Exp(Const(1)), Ln(left.right)))
+            if isinstance(left, Ln) and isinstance(right, Exp):
+                self.rules_applied += 1
+                return Sub(left.arg, right.arg)
+            if _is_const(left, 1) and isinstance(right, Exp):
+                self.rules_applied += 1
+                return Sub(Exp(Const(1)), right.arg)
+            if _is_const(left, 0):
+                self.rules_applied += 1
+                return Sub(Const(1), Ln(right))
+            if _is_const(right, 1):
+                self.rules_applied += 1
+                return Exp(left)
+            return EML(left, right)
+
+        if isinstance(expr, EMLStar):
+            left = self._apply_rules(expr.left)
+            right = self._apply_rules(expr.right)
+            if _is_const(left, 0) and isinstance(right, Exp):
+                self.rules_applied += 1
+                return Sub(Const(1), Conj(right.arg))
+            return EMLStar(left, right)
+
+        raise TypeError(f"unknown expression node: {type(expr)!r}")
+
+
+# Compatibility aliases for callers of the original module.
+_ExpNode = Exp
+_LnNode = Ln
+_SubNode = Sub
+_ConjNode = Conj
+
 
 if __name__ == "__main__":
-    opt = EGraphOptimizer()
-
-    print("EGraphOptimizer — 6 rewriting rules demo")
-    print()
-
-    # conjugate_formula: 1 - eml★(0, eml(z, 1))
-    z = Var("z")
-    conj_expr = EMLStar(Const(0), EML(z, Const(1)))
-    simplified = opt.optimize(conj_expr)
-    print(f"  Original : {conj_expr}")
-    print(f"  Simplified: {simplified}")
-    print(f"  Rules applied: {opt.rules_applied}")
-
-    z_val = mpmath.mpc(1.5, 0.8)
-    original_val   = conj_expr.eval(z_val)
-    simplified_val = simplified.eval(z_val)
-    print(f"  Numeric check: original={original_val:.6f}, simplified={simplified_val:.6f}")
-    print(f"  Error: {abs(original_val - simplified_val):.2e}")
+    z = Var()
+    original = EMLStar(Const(0), EML(z, Const(1)))
+    optimizer = EGraphOptimizer()
+    simplified = optimizer.optimize(original)
+    print(f"Original:   {original}")
+    print(f"Simplified: {simplified}")
+    print(f"Rules:      {optimizer.rules_applied}")

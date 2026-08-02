@@ -105,4 +105,6 @@ def run():
     return p == t
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.exit(0 if run() else 1)
