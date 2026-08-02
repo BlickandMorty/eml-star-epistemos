@@ -1,5 +1,9 @@
 # EML-star Epistemos
 
+[![CI](https://github.com/BlickandMorty/eml-star-epistemos/actions/workflows/ci.yml/badge.svg)](https://github.com/BlickandMorty/eml-star-epistemos/actions/workflows/ci.yml)
+[![Python 3.10–3.13](https://img.shields.io/badge/Python-3.10--3.13-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An evidence-carrying research toolkit for
 `eml(x,y) = exp(x) - log(y)` and Anthony Monnerot's anti-holomorphic companion
 `eml_star(x,y) = exp(x) - log(conj(y))`.
@@ -85,6 +89,9 @@ code: `nasqret/eml-formalization` (Apache-2.0, Lean),
 (Apache-2.0, Python), `janegbert/pyeml` (MIT), and `yaniv-golan/eml-skill`
 (MIT). See [`docs/RELATED_PROJECTS.md`](docs/RELATED_PROJECTS.md) for what each
 teaches and where its license permits a derived fork.
+
+The live portfolio inventory, including fork-network relationships and default
+branches, is in [`docs/FORK_INVENTORY.md`](docs/FORK_INVENTORY.md).
 
 ## Scope and non-claims
 
