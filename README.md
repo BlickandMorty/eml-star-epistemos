@@ -15,6 +15,12 @@ prototype into an installable, replayable research artifact: expressions keep
 their syntax, numerical claims carry branch witnesses, and every theorem is
 labelled by evidence strength.
 
+The dedicated repository was assembled in August 2026, but the underlying EML
+and EML-star research, source history, and experiments predate that publication
+step. It consolidates the substantive Epistemos branch into one flagship so the
+mathematics remains public without padding the profile with unchanged reference
+forks.
+
 ## What this edition contributes
 
 - A corrected public arithmetic API. The upstream tests silently fell back to
@@ -90,8 +96,8 @@ code: `nasqret/eml-formalization` (Apache-2.0, Lean),
 (MIT). See [`docs/RELATED_PROJECTS.md`](docs/RELATED_PROJECTS.md) for what each
 teaches and where its license permits a derived fork.
 
-The live portfolio inventory, including fork-network relationships and default
-branches, is in [`docs/FORK_INVENTORY.md`](docs/FORK_INVENTORY.md).
+The upstream comparison and consolidation record is in
+[`docs/FORK_INVENTORY.md`](docs/FORK_INVENTORY.md).
 
 ## Scope and non-claims
 

@@ -1,31 +1,43 @@
-# Live EML fork inventory
+# EML upstream comparison and consolidation record
 
-Inventory date: 2026-08-02. Every entry below is a public GitHub repository
-under `BlickandMorty`. Forks preserve GitHub's parent relationship and original
-history.
+Audit date: 2026-08-17.
 
-| Live repository | GitHub parent | Default branch | Portfolio purpose |
-|---|---|---|---|
-| [`eml_star`](https://github.com/BlickandMorty/eml_star) | `antparis/eml_star` | `main` | Clean upstream fork plus `epistemos-witnessed-eml` enhancement branch |
-| [`oxieml-star`](https://github.com/BlickandMorty/oxieml-star) | `antparis/oxieml-star` in the `cool-japan/oxieml` fork network | `master` | Symbolic-regression and performance integration |
-| [`eml-formalization`](https://github.com/BlickandMorty/eml-formalization) | `nasqret/eml-formalization` | `main` | Lean/Mathlib proof work |
-| [`pyeml`](https://github.com/BlickandMorty/pyeml) | `janegbert/pyeml` | `main` | Small Python API comparison |
-| [`eml-skill`](https://github.com/BlickandMorty/eml-skill) | `yaniv-golan/eml-skill` | `main` | Agent workflow integration |
-| [`all_functions_from_eml`](https://github.com/BlickandMorty/all_functions_from_eml) | `minchoCoin/all_functions_from_eml` | `main` | Independent implementation comparison |
+## Flagship history
 
-GitHub permits only one personal fork per fork network. Because
-`antparis/oxieml-star` is already a fork in the `cool-japan/oxieml` network,
-requesting both correctly resolves to the single `oxieml-star` repository.
-That is a GitHub invariant, not a missing clone.
+This repository preserves the full `antparis/eml_star` history and makes the
+two-commit Epistemos research edition the default `main` line. At the time of
+consolidation, the enhancement branch in the GitHub fork and this repository
+resolved to the same commit:
 
-## Dedicated repository
+```text
+9814f796179b22cf6c63001bb177b2cf8ed81ab0
+```
 
-[`eml-star-epistemos`](https://github.com/BlickandMorty/eml-star-epistemos) is
-the non-fork flagship. It preserves the full upstream history while making the
-Epistemos additions the default `main` branch. This separation keeps provenance
-obvious: readers can compare the clean GitHub fork, the enhancement branch, and
-the dedicated edition.
+The duplicate fork page could therefore be retired without deleting the
+enhancement, its ancestry, or the original author's history.
 
-An entry's presence here means its Git object graph and default branch are live.
-It does not imply that every upstream research claim is independently proved by
-the Epistemos edition; use the theorem ledger for those distinctions.
+## Comparison projects
+
+The research audit studied these independently authored implementations:
+
+| Project | License at audit | What it helps compare |
+| --- | --- | --- |
+| `nasqret/eml-formalization` | Apache-2.0 | Lean/Mathlib formalization strategy |
+| `cool-japan/oxieml` | Apache-2.0 | Rust symbolic-regression implementation |
+| `antparis/oxieml-star` | Apache-2.0 | EML-star integration approach |
+| `janegbert/pyeml` | MIT | Compact Python API |
+| `yaniv-golan/eml-skill` | MIT | Agent-workflow presentation |
+| `minchoCoin/all_functions_from_eml` | upstream terms | Independent implementation comparison |
+
+Unmodified personal forks of those projects are not portfolio contributions.
+They are unnecessary once upstream links, licenses, and local preservation
+mirrors exist. No external code is relicensed here merely because it was
+studied.
+
+## Claim boundary
+
+Preserving a Git graph establishes provenance, not mathematical truth. Use
+`THEOREM_LEDGER.md` for formal, analytic, conditional, numerical, and open
+statuses. The original EML-star operator and paper remain Anthony Monnerot's
+work; the witnessed IR, receipts, corrected software rules, testing, packaging,
+and evidence taxonomy are the Epistemos delta.
