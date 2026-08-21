@@ -8,18 +8,14 @@ An evidence-carrying research toolkit for
 `eml(x,y) = exp(x) - log(y)` and Anthony Monnerot's anti-holomorphic companion
 `eml_star(x,y) = exp(x) - log(conj(y))`.
 
-This is an attributed, full-history derivative of
+This is an attributed, full-history research derivative of
 [`antparis/eml_star`](https://github.com/antparis/eml_star), not a claim of
-authorship over its paper or original operator. The Epistemos edition turns the
-prototype into an installable, replayable research artifact: expressions keep
-their syntax, numerical claims carry branch witnesses, and every theorem is
-labelled by evidence strength.
+authorship over its paper or original operator. 
 
-The dedicated repository was assembled in August 2026, but the underlying EML
-and EML-star research, source history, and experiments predate that publication
-step. It consolidates the substantive Epistemos branch into one flagship so the
-mathematics remains public without padding the profile with unchanged reference
-forks.
+### 🔬 Epistemic Transparency & Learning-in-Public Note
+* **AI-Augmented Scaffolding:** The formal AST expressions, Lean declarations, and exploratory optimizer rules in this toolkit were explored and scaffolded using frontier AI models as research accelerators.
+* **Public Learning Curriculum:** As an undergraduate in Chemical Physics at Columbia University, I treat this codebase as an open, public notebook—systematically learning and formally verifying the underlying complex analysis, branch cuts, and algebraic structures step-by-step.
+* **Failure-Mode Evaluation:** This project serves as an active testbed for evaluating where LLMs succeed in generating valid symbolic/formal structures versus where they fail or produce invalid optimizer rules.
 
 ## What this edition contributes
 
